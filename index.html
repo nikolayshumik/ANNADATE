@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Приглашение | Ананас и вкусняшки</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f9e0b5 0%, #fdd998 100%);
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 253, 245, 0.97);
+            border-radius: 56px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem 1.8rem 2.2rem;
+            backdrop-filter: blur(2px);
+            transition: 0.2s;
+        }
+        h1 {
+            font-size: 2.4rem;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+        .message-text {
+            background: #fff0e0;
+            padding: 20px;
+            border-radius: 40px;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            line-height: 1.45;
+            color: #a5662a;
+            border-left: 6px solid #ffb347;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+        label {
+            font-weight: 700;
+            color: #bf7f3c;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1rem;
+            border: 2px solid #ffdfb3;
+            border-radius: 60px;
+            background: white;
+            outline: none;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #ffaa55;
+            box-shadow: 0 0 0 3px rgba(255, 170, 85, 0.2);
+        }
+        button {
+            background: #ff9f4a;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+            box-shadow: 0 6px 14px rgba(255, 159, 74, 0.4);
+        }
+        button:hover {
+            background: #e8892c;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+        .message {
+            margin-top: 24px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 500;
+            display: none;
+        }
+        .success {
+            background: #e6ffdb;
+            color: #2c6e2c;
+            border: 1px solid #b3e0a0;
+        }
+        .error {
+            background: #ffe0db;
+            color: #b33c2c;
+            border: 1px solid #ffbcb0;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1.5rem;
+            color: #d9943c;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🍍 Приветик 🧸</h1>
+    <div class="message-text">
+        Надеюсь, ананас и вкусняшки подняли тебе настроение после смены.<br><br>
+        Давай увидимся на этой неделе.<br>
+        <strong>Выбери день, когда тебе будет удобно, и мне придёт уведомление</strong>
+    </div>
+
+    <form id="dateForm">
+        <div class="form-group">
+            <label>📅 Удобный день</label>
+            <input type="date" id="date" required>
+        </div>
+
+        <div class="form-group">
+            <label>⏰ Время</label>
+            <input type="time" id="time" required>
+        </div>
+
+        <button type="submit">💛 Давай знакомиться 💛</button>
+    </form>
+
+    <div id="responseMessage" class="message"></div>
+    <footer>♥ нажми — я сразу узнаю и напишу тебе ♥</footer>
+</div>
+
+<script>
+    // ⚠️ СЮДА ВСТАВЬ СВОЙ GOOGLE APPS SCRIPT URL (как получить – см. инструкцию ниже)
+    // const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/ТВОЙ_УНИКАЛЬНЫЙ_ID/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0gZtliJ0OWjdN-5XyIwvN-lle5AGDvRb4idGFcFTVr9aXibX9wKq0E6XoRXE0FOiY/exec";
+    const form = document.getElementById('dateForm');
+    const msgDiv = document.getElementById('responseMessage');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+
+        if (!date || !time) {
+            showMessage("Выбери, пожалуйста, и день, и время 💛", "error");
+            return;
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+        if (date < today) {
+            showMessage("Давай выберем сегодня или любой день впереди 😊", "error");
+            return;
+        }
+
+        const btn = form.querySelector('button');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "Отправляю... 🍍";
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    date: date,
+                    time: time
+                })
+            });
+
+            if (response.ok) {
+                showMessage("🎉 Ура! Я получил твой выбор. Скоро напишу тебе ❤️", "success");
+                form.reset();
+            } else {
+                showMessage("Что‑то не получилось… Может, нажмёшь ещё раз? 🥺", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            showMessage("Ошибка соединения. Но ты всегда можешь написать мне в TG @AnnaDate_bot", "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
+    });
+
+    function showMessage(text, type) {
+        msgDiv.textContent = text;
+        msgDiv.className = `message ${type}`;
+        msgDiv.style.display = "block";
+        setTimeout(() => {
+            msgDiv.style.display = "none";
+        }, 5000);
+    }
+
+    // запрещаем выбирать даты в прошлом
+    document.getElementById('date').min = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
